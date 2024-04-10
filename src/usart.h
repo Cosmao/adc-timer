@@ -23,9 +23,9 @@ class usart {
 private:
   uint8_t flags;
   uint8_t sendIndex = 0;
-  uint8_t sendBuffer[bufferSize];
+  uint8_t sendBuffer[bufferSize] = {};
   uint8_t recieveIndex = 0;
-  uint8_t recieveBuffer[bufferSize];
+  uint8_t recieveBuffer[bufferSize] = {};
   bool isInRange(uint8_t index);
   bool dataGood(uint8_t *buff, uint8_t index);
   void sendByte(void);

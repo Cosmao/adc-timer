@@ -9,7 +9,7 @@ class led : public gpio {
 
 private:
 public:
-  led(uint8_t pin);
+  led(pinEnum pin);
   void toggleLed(void);
   void enableLed(void);
   void disableLed(void);

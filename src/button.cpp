@@ -3,7 +3,7 @@
 #include "interruptDisabler.h"
 #include "led.h"
 
-ledButton::ledButton(uint8_t pin, led &ledRef)
+ledButton::ledButton(pinEnum pin, led &ledRef)
     : gpio(pin, ioEnum::GPIO_INPUT), ledRef(ledRef) {}
 
 bool ledButton::isButtonPressed(void) {

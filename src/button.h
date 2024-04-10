@@ -13,7 +13,7 @@ private:
   volatile uint8_t disableUntil;
 
 public:
-  ledButton(uint8_t pin, led &ledRef);
+  ledButton(pinEnum pin, led &ledRef);
   bool isButtonPressed(void);
   void toggleButtonLed(void);
 };
