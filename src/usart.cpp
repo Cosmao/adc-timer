@@ -16,34 +16,47 @@ usart::usart(uint16_t baud) {
     UBRR0L = (uint8_t)baud;
     UCSR0B = (1 << RXEN0) | (1 << TXEN0); // enable transmitter and reciever
     UCSR0B |=
-        (1 << TXCIE0) | (1 << RXCIE0) |
-        (1 << UDRIE0); // enable send, recieve and data registry empty interrupt
-    UCSR0C = (3 << UCSZ00); // 8-bit , 1stop bit
+        (1 << TXCIE0) | (1 << RXCIE0); // enable send and transmit interrupt
+    UCSR0C = (3 << UCSZ00);            // 8-bit , 1stop bit
+    this->flags |= sendBufferClearFlag;
   }
-  this->flags = standbyFlag;
 }
 
-// TODO: Move the bounds check
+bool usart::isInRange(uint8_t index) {
+  if (index < (bufferSize - 1)) {
+    return true;
+  }
+  return false;
+}
+
+bool usart::dataGood(uint8_t *buff, uint8_t index) {
+  if (buff[index] != '\0') {
+    return true;
+  }
+  return false;
+}
+
 void usart::sendByte(void) {
-  if ((UCSR0A & (1 << UDRE0)) && (this->sendIndex < (bufferSize - 1))) {
-    if (this->sendBuffer[this->sendIndex] != '\0') {
-      scopedInterruptDisabler scopedDisable;
-      UDR0 = this->sendBuffer[this->sendIndex];
-      this->sendIndex++;
-    } else {
-      this->flags &= ~(sendingFlag);
-      this->flags |= sendBufferClearFlag;
+  if ((UCSR0A & (1 << UDRE0)) == (1 << UDRE0)) {
+    if (this->isInRange(this->sendIndex)) {
+      if (this->dataGood(this->sendBuffer, this->sendIndex)) {
+        UDR0 = this->sendBuffer[this->sendIndex];
+        this->sendIndex++;
+        this->flags &= ~actOutgoingDataFlag;
+      } else {
+        this->flags &= ~actOutgoingDataFlag;
+        this->flags |= sendBufferClearFlag;
+      }
     }
   }
 }
 
 void usart::sendString(const char *string) {
-  if (this->getUsartStatus() == usartStatus::usartStandby) {
-    this->flags |= sendingFlag;
+  if (this->sendBufferClear()) {
     this->flags &= ~sendBufferClearFlag;
     this->sendIndex = 0;
     uint8_t counter = 0;
-    while (*string != '\0' && counter < bufferSize - 3) {
+    while (*string != '\0' && counter < bufferSize - 2) {
       this->sendBuffer[counter] = *string;
       counter++;
       string++;
@@ -55,19 +68,18 @@ void usart::sendString(const char *string) {
   }
 }
 
-// TODO: Move the bounds check
 void usart::readByte(void) {
-  if (((UCSR0A & (1 << RXC0))) && (this->recieveIndex < (bufferSize - 1))) {
-    scopedInterruptDisabler interruptDisabler;
-    this->flags |= recievingFlag;
-    this->flags &= ~standbyFlag;
-    this->recieveBuffer[this->recieveIndex] = UDR0;
-    if (this->recieveBuffer[this->recieveIndex] == '\0') {
-      this->flags &= ~recievingFlag;
-      this->flags |= standbyFlag | incomingDataReadyFlag;
-      this->recieveIndex = 0;
-    } else {
-      this->recieveIndex++;
+  if ((UCSR0A & (1 << RXC0)) == (1 << RXC0)) {
+    if (this->isInRange(this->recieveIndex)) {
+      scopedInterruptDisabler interruptDisabler;
+      this->flags &= ~actIncomingDataFlag;
+      this->recieveBuffer[this->recieveIndex] = UDR0;
+      if (this->recieveBuffer[this->recieveIndex] == '\0') {
+        this->flags |= incomingDataReadyFlag;
+        this->recieveIndex = 0;
+      } else {
+        this->recieveIndex++;
+      }
     }
   }
 }
@@ -93,39 +105,18 @@ void usart::readData(char *string) {
   this->flags &= ~incomingDataReadyFlag;
 }
 
-usartStatus usart::getUsartStatus(void) {
-  if ((this->flags & sendingFlag) == sendingFlag) {
-    return usartStatus::usartIsSending;
-  } else if ((this->flags & recievingFlag) == recievingFlag) {
-    return usartStatus::usartIsRecieving;
-  } else if ((this->flags & standbyFlag) == standbyFlag) {
-    return usartStatus::usartStandby;
-  }
-  return usartStatus::usartUndefined;
-}
-
-void usart::checkData(void) {
+void usart::handleData(void) {
   if ((this->flags & actIncomingDataFlag) == actIncomingDataFlag) {
-    usartStatus curStatus = usartPtr->getUsartStatus();
-    if (curStatus == usartStatus::usartIsRecieving ||
-        curStatus == usartStatus::usartStandby) {
-      usartPtr->readByte();
-    }
+    usartPtr->readByte();
   }
   if ((this->flags & actOutgoingDataFlag) == actOutgoingDataFlag) {
-    usartStatus curStatus = usartPtr->getUsartStatus();
-    if (curStatus == usartStatus::usartIsSending ||
-        curStatus == usartStatus::usartStandby) {
-      usartPtr->sendByte();
-    }
+    usartPtr->sendByte();
   }
 }
 
 ISR(USART_RX_vect) { usartPtr->flags |= actIncomingDataFlag; }
 
 ISR(USART_TX_vect) { usartPtr->flags |= actOutgoingDataFlag; }
-
-ISR(USART_UDRE_vect){}
 
 uint8_t decodeIncomingAmount(const char *string) {
   uint8_t value = 0;

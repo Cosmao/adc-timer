@@ -3,7 +3,7 @@
 #include "led.h"
 #include "usart.h"
 #include <avr/io.h>
-#include <stdio.h>
+// #include <stdio.h>
 #include <util/delay.h>
 
 #define baudRate 9600
@@ -22,7 +22,7 @@ int main(void) {
   adcPtr = &adc;
   SREG |= (1 << SREG_I); // enable interrupts
   while (true) {
-    usart.checkData();
+    usart.handleData();
     adc.startRead(adcPin);
 
     if (button.isButtonPressed()) {
@@ -48,9 +48,9 @@ int main(void) {
     }
 
     if (adc.dataReady()) {
-      char strBuff[bufferSize];
-      sprintf(strBuff, "ADC: %u\n\r", adc.readData());
-      usart.sendString(strBuff);
+      // char strBuff[bufferSize];
+      // sprintf(strBuff, "ADC: %u\n\r", adc.readData());
+      // usart.sendString(strBuff);
     }
   }
 }

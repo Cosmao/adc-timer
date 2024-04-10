@@ -15,19 +15,10 @@
 
 extern "C" void USART_RX_vect(void) __attribute__((signal));
 extern "C" void USART_TX_vect(void) __attribute__((signal));
-extern "C" void USART_UDRE_vect(void) __attribute__((signal));
-
-enum usartStatus {
-  usartIsSending,
-  usartIsRecieving,
-  usartStandby,
-  usartUndefined
-};
 
 class usart {
-  friend void::USART_RX_vect(void);
-  friend void::USART_TX_vect(void);
-  friend void::USART_UDRE_vect(void);
+  friend void ::USART_RX_vect(void);
+  friend void ::USART_TX_vect(void);
 
 private:
   uint8_t flags;
@@ -35,17 +26,18 @@ private:
   uint8_t sendBuffer[bufferSize];
   uint8_t recieveIndex = 0;
   uint8_t recieveBuffer[bufferSize];
+  bool isInRange(uint8_t index);
+  bool dataGood(uint8_t *buff, uint8_t index);
+  void sendByte(void);
+  void readByte(void);
 
 public:
   usart(uint16_t baud);
-  void sendByte(void);
   void sendString(const char *string);
-  void readByte(void);
   bool incomingDataReady(void);
   bool sendBufferClear(void);
   void readData(char *string);
-  usartStatus getUsartStatus(void);
-  void checkData(void);
+  void handleData(void);
 };
 
 uint8_t decodeIncomingAmount(const char *string);
