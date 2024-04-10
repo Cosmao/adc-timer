@@ -1,7 +1,7 @@
 # I target a recent cmake, it shouldn't be a problem on a dev machine
 cmake_minimum_required(VERSION 3.28)
 # Project name
-project("gpio_uart")
+project("adc-timer")
 # Product filename
 set(PRODUCT_NAME my_firmware)
 ## AVR Chip Configuration

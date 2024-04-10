@@ -15,6 +15,7 @@ int main(void) {
   usartPtr = &usart;
   SREG |= (1 << SREG_I); // enable interrupts
   while (true) {
+    usart.checkData();
     if (button.isButtonPressed()) {
       button.toggleButtonLed();
       // NOTE: delay is only here to make it usable, havent set up a proper

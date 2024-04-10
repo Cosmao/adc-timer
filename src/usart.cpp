@@ -101,21 +101,28 @@ usartStatus usart::getUsartStatus(void) {
   return usartStatus::usartUndefined;
 }
 
-ISR(USART_RX_vect) {
-  usartStatus curStatus = usartPtr->getUsartStatus();
-  if (curStatus == usartStatus::usartIsRecieving ||
-      curStatus == usartStatus::usartStandby) {
-    usartPtr->readByte();
+void usart::checkData(void) {
+  if ((this->flags & actIncomingDataFlag) == actIncomingDataFlag) {
+    usartStatus curStatus = usartPtr->getUsartStatus();
+    if (curStatus == usartStatus::usartIsRecieving ||
+        curStatus == usartStatus::usartStandby) {
+      usartPtr->readByte();
+    }
+  }
+  if ((this->flags & actOutgoingDataFlag) == actOutgoingDataFlag) {
+    usartStatus curStatus = usartPtr->getUsartStatus();
+    if (curStatus == usartStatus::usartIsSending ||
+        curStatus == usartStatus::usartStandby) {
+      usartPtr->sendByte();
+    }
   }
 }
 
-ISR(USART_TX_vect) {
-  usartStatus curStatus = usartPtr->getUsartStatus();
-  if (curStatus == usartStatus::usartIsSending ||
-      curStatus == usartStatus::usartStandby) {
-    usartPtr->sendByte();
-  }
-}
+void usart::setFlag(uint8_t flag) { this->flags |= flag; }
+
+ISR(USART_RX_vect) { usartPtr->setFlag(actIncomingDataFlag); }
+
+ISR(USART_TX_vect) { usartPtr->setFlag(actOutgoingDataFlag); }
 
 uint8_t decodeIncomingAmount(const char *string) {
   uint8_t value = 0;

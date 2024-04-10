@@ -10,6 +10,8 @@
 #define incomingDataReadyFlag (1 << 3)
 #define sendBufferClearFlag (1 << 4)
 #define datalossFlag (1 << 5)
+#define actIncomingDataFlag (1 << 6)
+#define actOutgoingDataFlag (1 << 7)
 
 enum usartStatus {
   usartIsSending,
@@ -35,6 +37,8 @@ public:
   bool sendBufferClear(void);
   void readData(char *string);
   usartStatus getUsartStatus(void);
+  void checkData(void);
+  void setFlag(uint8_t flag);
 };
 
 uint8_t decodeIncomingAmount(const char *string);

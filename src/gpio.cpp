@@ -7,26 +7,26 @@
 gpio::gpio(uint8_t pin, ioEnum io)
     : pin(pin), readBank(getReadBank(pin)), readOffset(getReadOffset(pin)),
       writeBank(getWriteBank(pin)), writeOffset(getWriteOffset(pin)) {
-  volatile uint8_t *ptr = getPtr(getDDRBank(pin));
+  volatile uint8_t *dataDirectionPtr = getPtr(getDDRBank(pin));
   scopedInterruptDisabler scopedDisable;
   switch (io) {
   case ioEnum::GPIO_INPUT:
-    *ptr &= ~this->writeOffset;
+    *dataDirectionPtr &= ~this->writeOffset;
     break;
   case ioEnum::GPIO_OUTPUT:
-    *ptr |= this->writeOffset;
+    *dataDirectionPtr |= this->writeOffset;
     break;
   }
 }
 
-constexpr uint16_t gpio::getReadBank(uint8_t pin) {
+constexpr uint8_t gpio::getReadBank(uint8_t pin) {
   if (pin < bankMaxLength) {
     // FIXME: Find a way to save these as uint8_t and save some memory
     // Can just make it pointers instead and save on execution time
     // and implementation time
-    return (uint16_t)&PIND;
+    return (uint8_t)((uint16_t)&PIND & 0xFF);
   } else if (pin <= maxPin) {
-    return (uint16_t)&PINB;
+    return (uint8_t)((uint16_t)&PINB & 0xFF);
   }
   // NOTE: I kinda want to throw a error at compile time here since its out of
   // bounds
@@ -40,11 +40,11 @@ constexpr uint8_t gpio::getReadOffset(uint8_t pin) {
   return (1 << pin);
 }
 
-constexpr uint16_t gpio::getWriteBank(uint8_t pin) {
+constexpr uint8_t gpio::getWriteBank(uint8_t pin) {
   if (pin < bankMaxLength) {
-    return (uint16_t)&PORTD;
+    return (uint8_t)((uint16_t)&PORTD & 0xFF);
   } else if (pin <= maxPin) {
-    return (uint16_t)&PORTB;
+    return (uint8_t)((uint16_t)&PORTB & 0xFF);
   }
   // NOTE: I kinda want to throw a error at compile time here since its out of
   // bounds
@@ -55,17 +55,12 @@ constexpr uint8_t gpio::getWriteOffset(uint8_t pin) {
   return getReadOffset(pin);
 }
 
-volatile uint8_t *getPtr(uint8_t offset) {
-  volatile uint8_t *testPtr = reinterpret_cast<uint8_t *>(offset);
-  return testPtr;
-}
-
-constexpr uint16_t gpio::getDDRBank(uint8_t pin) {
+constexpr uint8_t gpio::getDDRBank(uint8_t pin) {
   if (pin < bankMaxLength) {
-    return (uint16_t)&DDRD;
+    return (uint8_t)((uint16_t)&DDRD & 0xFF);
     return DDRD;
   } else if (pin <= maxPin) {
-    return (uint16_t)&DDRB;
+    return (uint8_t)((uint16_t)&DDRB & 0xFF);
   }
   // NOTE: I kinda want to throw a error at compile time here since its out of
   // bounds
@@ -73,3 +68,8 @@ constexpr uint16_t gpio::getDDRBank(uint8_t pin) {
 }
 
 constexpr uint8_t gpio::getDDROffset(uint8_t pin) { return getReadOffset(pin); }
+
+volatile uint8_t *getPtr(uint8_t offset) {
+  volatile uint8_t *ptr = reinterpret_cast<uint8_t *>(offset);
+  return ptr;
+}
