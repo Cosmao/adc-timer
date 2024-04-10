@@ -4,6 +4,8 @@
 #include <avr/io.h>
 #include <string.h>
 
+// TODO: Rewrite so it can handle sending and recieving at the same time?
+
 usart *usartPtr = nullptr; // extern ptr for interrupt vec
 
 usart::usart(uint16_t baud) {
@@ -14,8 +16,9 @@ usart::usart(uint16_t baud) {
     UBRR0L = (uint8_t)baud;
     UCSR0B = (1 << RXEN0) | (1 << TXEN0); // enable transmitter and reciever
     UCSR0B |=
-        (1 << TXCIE0) | (1 << RXCIE0); // enable send and recieve interrupt
-    UCSR0C = (3 << UCSZ00);            // 8-bit , 1stop bit
+        (1 << TXCIE0) | (1 << RXCIE0) |
+        (1 << UDRIE0); // enable send, recieve and data registry empty interrupt
+    UCSR0C = (3 << UCSZ00); // 8-bit , 1stop bit
   }
   this->flags = standbyFlag;
 }
@@ -121,6 +124,8 @@ void usart::checkData(void) {
 ISR(USART_RX_vect) { usartPtr->flags |= actIncomingDataFlag; }
 
 ISR(USART_TX_vect) { usartPtr->flags |= actOutgoingDataFlag; }
+
+ISR(USART_UDRE_vect){}
 
 uint8_t decodeIncomingAmount(const char *string) {
   uint8_t value = 0;

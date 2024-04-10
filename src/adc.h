@@ -3,10 +3,14 @@
 
 #include <avr/io.h>
 
+#define dataReadyFlag (1 << 0)
+#define isConvertingFlag (1 << 1)
+
 extern "C" void ADC_vect(void) __attribute__((signal));
 
 class adc {
   friend void::ADC_vect(void);
+
 private:
   uint8_t flags;
   uint16_t value;

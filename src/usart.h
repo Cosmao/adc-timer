@@ -15,6 +15,7 @@
 
 extern "C" void USART_RX_vect(void) __attribute__((signal));
 extern "C" void USART_TX_vect(void) __attribute__((signal));
+extern "C" void USART_UDRE_vect(void) __attribute__((signal));
 
 enum usartStatus {
   usartIsSending,
@@ -26,6 +27,7 @@ enum usartStatus {
 class usart {
   friend void::USART_RX_vect(void);
   friend void::USART_TX_vect(void);
+  friend void::USART_UDRE_vect(void);
 
 private:
   uint8_t flags;
