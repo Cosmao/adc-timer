@@ -118,11 +118,9 @@ void usart::checkData(void) {
   }
 }
 
-void usart::setFlag(uint8_t flag) { this->flags |= flag; }
+ISR(USART_RX_vect) { usartPtr->flags |= actIncomingDataFlag; }
 
-ISR(USART_RX_vect) { usartPtr->setFlag(actIncomingDataFlag); }
-
-ISR(USART_TX_vect) { usartPtr->setFlag(actOutgoingDataFlag); }
+ISR(USART_TX_vect) { usartPtr->flags |= actOutgoingDataFlag; }
 
 uint8_t decodeIncomingAmount(const char *string) {
   uint8_t value = 0;

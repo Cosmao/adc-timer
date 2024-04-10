@@ -1,7 +1,7 @@
 #include "gpio.h"
 #include "interruptDisabler.h"
 
-#define bankMaxLength 8
+#define bankSize 8
 #define maxPin 13
 
 gpio::gpio(uint8_t pin, ioEnum io)
@@ -20,7 +20,7 @@ gpio::gpio(uint8_t pin, ioEnum io)
 }
 
 constexpr uint8_t gpio::getReadBank(uint8_t pin) {
-  if (pin < bankMaxLength) {
+  if (pin < bankSize) {
     // FIXME: Find a way to save these as uint8_t and save some memory
     // Can just make it pointers instead and save on execution time
     // and implementation time
@@ -34,14 +34,14 @@ constexpr uint8_t gpio::getReadBank(uint8_t pin) {
 }
 
 constexpr uint8_t gpio::getReadOffset(uint8_t pin) {
-  if (pin >= bankMaxLength) {
-    pin -= bankMaxLength;
+  if (pin >= bankSize) {
+    pin -= bankSize;
   }
   return (1 << pin);
 }
 
 constexpr uint8_t gpio::getWriteBank(uint8_t pin) {
-  if (pin < bankMaxLength) {
+  if (pin < bankSize) {
     return (uint8_t)((uint16_t)&PORTD & 0xFF);
   } else if (pin <= maxPin) {
     return (uint8_t)((uint16_t)&PORTB & 0xFF);
@@ -56,7 +56,7 @@ constexpr uint8_t gpio::getWriteOffset(uint8_t pin) {
 }
 
 constexpr uint8_t gpio::getDDRBank(uint8_t pin) {
-  if (pin < bankMaxLength) {
+  if (pin < bankSize) {
     return (uint8_t)((uint16_t)&DDRD & 0xFF);
     return DDRD;
   } else if (pin <= maxPin) {

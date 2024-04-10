@@ -13,6 +13,9 @@
 #define actIncomingDataFlag (1 << 6)
 #define actOutgoingDataFlag (1 << 7)
 
+extern "C" void USART_RX_vect(void) __attribute__((signal));
+extern "C" void USART_TX_vect(void) __attribute__((signal));
+
 enum usartStatus {
   usartIsSending,
   usartIsRecieving,
@@ -21,6 +24,9 @@ enum usartStatus {
 };
 
 class usart {
+  friend void::USART_RX_vect(void);
+  friend void::USART_TX_vect(void);
+
 private:
   uint8_t flags;
   uint8_t sendIndex = 0;
@@ -38,7 +44,6 @@ public:
   void readData(char *string);
   usartStatus getUsartStatus(void);
   void checkData(void);
-  void setFlag(uint8_t flag);
 };
 
 uint8_t decodeIncomingAmount(const char *string);
