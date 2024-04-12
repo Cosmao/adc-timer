@@ -9,7 +9,7 @@
 
 #define baudRate 9600
 #define ledPin pinEnum::GPIO_PIN3
-#define buttonPin pinEnum::GPIO_PIN4 
+#define buttonPin pinEnum::GPIO_PIN4
 #define adcPin 0
 
 int main(void) {
@@ -22,6 +22,8 @@ int main(void) {
   usartPtr = &usart;
   adcPtr = &adc;
   SREG |= (1 << SREG_I); // enable interrupts
+  usart.sendString("Starting\n\r");
+  char charbuff[bufferSize];
   while (true) {
     usart.handleData();
     adc.startRead(adcPin);
@@ -34,24 +36,24 @@ int main(void) {
     }
 
     if (usart.incomingDataReady()) {
-      char charbuff[bufferSize];
       usart.readData(charbuff);
       // NOTE: Just echoing back whatever we get
       usart.sendString(charbuff);
-      if (decodeMessage(charbuff) == 0) {
-        uint8_t val = decodeIncomingAmount(charbuff);
-        if (val > 127) {
-          led.enableLed();
-        } else {
-          led.disableLed();
-        }
-      }
+
+      // if (decodeMessage(charbuff) == 0) {
+      //   uint8_t val = decodeIncomingAmount(charbuff);
+      //   if (val > 127) {
+      //     led.enableLed();
+      //   } else {
+      //     led.disableLed();
+      //   }
+      // }
     }
 
-    if (adc.dataReady()) {
-      // char strBuff[bufferSize];
-      // sprintf(strBuff, "ADC: %u\n\r", adc.readData());
-      // usart.sendString(strBuff);
-    }
+    // if (adc.dataReady()) {
+    // char strBuff[bufferSize];
+    // sprintf(strBuff, "ADC: %u\n\r", adc.readData());
+    // usart.sendString(strBuff);
+    // }
   }
 }

@@ -38,13 +38,13 @@ bool usart::dataGood(uint8_t *buff, uint8_t index) {
 
 void usart::sendByte(void) {
   if ((UCSR0A & (1 << UDRE0)) == (1 << UDRE0)) {
+    scopedInterruptDisabler interruptDisabler;
+    this->flags &= ~actOutgoingDataFlag;
     if (this->isInRange(this->sendIndex)) {
       if (this->dataGood(this->sendBuffer, this->sendIndex)) {
         UDR0 = this->sendBuffer[this->sendIndex];
         this->sendIndex++;
-        this->flags &= ~actOutgoingDataFlag;
       } else {
-        this->flags &= ~actOutgoingDataFlag;
         this->flags |= sendBufferClearFlag;
       }
     }
@@ -70,9 +70,9 @@ void usart::sendString(const char *string) {
 
 void usart::readByte(void) {
   if ((UCSR0A & (1 << RXC0)) == (1 << RXC0)) {
+    scopedInterruptDisabler interruptDisabler;
+    this->flags &= ~actIncomingDataFlag;
     if (this->isInRange(this->recieveIndex)) {
-      scopedInterruptDisabler interruptDisabler;
-      this->flags &= ~actIncomingDataFlag;
       this->recieveBuffer[this->recieveIndex] = UDR0;
       if (this->recieveBuffer[this->recieveIndex] == '\0') {
         this->flags |= incomingDataReadyFlag;
@@ -80,6 +80,10 @@ void usart::readByte(void) {
       } else {
         this->recieveIndex++;
       }
+    } else {
+      this->recieveBuffer[bufferSize - 1] = '\0';
+      this->flags |= incomingDataReadyFlag;
+      this->recieveIndex = 0;
     }
   }
 }
