@@ -21,10 +21,14 @@ set(USB_PORT /dev/ttyUSB0)
 
 # AVR Fuses, must be in concordance with your hardware and F_CPU
 # http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p
-set(E_FUSE 0xfd)
-set(H_FUSE 0xda)
-set(L_FUSE 0xfd)
-set(LOCK_BIT 0xff)
+# set(E_FUSE 0xfd)
+# set(H_FUSE 0xda)
+# set(L_FUSE 0xfd)
+# set(LOCK_BIT 0xff)
+set(E_FUSE 0xff)
+set(H_FUSE 0xd9)
+set(L_FUSE 0x62)
+set(LOCK_BIT 0xFF)
 
 # Use AVR GCC toolchain
 set(CMAKE_SYSTEM_NAME Generic)
@@ -45,7 +49,6 @@ add_compile_options(
     -mmcu=${MCU} # MCU
     -Os # optimize
     -Wall # enable warnings
-    -Wno-main
     -Wundef
     -Werror
     -Wfatal-errors

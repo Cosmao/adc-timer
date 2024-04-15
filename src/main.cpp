@@ -5,6 +5,7 @@
 #include "usart.h"
 #include <avr/io.h>
 // #include <stdio.h>
+#include "timer.h"
 #include <util/delay.h>
 
 #define baudRate 9600
@@ -17,16 +18,31 @@ int main(void) {
   ledButton button(buttonPin, led);
   adc adc;
   usart usart(baudRate);
+  timer time;
   // WARNING: enable global interrupts only after setting pointers! Can crash
   // otherwise
   usartPtr = &usart;
   adcPtr = &adc;
+  timerPtr = &time;
+  uint16_t lastMillis = 0;
+  uint16_t seconds = 0;
   SREG |= (1 << SREG_I); // enable interrupts
   usart.sendString("Starting\n\r");
-  char charbuff[bufferSize];
+  char charBuff[bufferSize];
   while (true) {
     usart.handleData();
     adc.startRead(adcPin);
+
+    uint16_t newMillis = time.getMiliSec();
+    if (newMillis % 200 == 0 && lastMillis != newMillis) {
+      lastMillis = newMillis;
+      led.toggleLed();
+    }
+
+    if(seconds != time.getSeconds()){
+      usart.sendString("Tick\n\r");
+      seconds = time.getSeconds();
+    }
 
     if (button.isButtonPressed()) {
       button.toggleButtonLed();
@@ -36,9 +52,9 @@ int main(void) {
     }
 
     if (usart.incomingDataReady()) {
-      usart.readData(charbuff);
+      usart.readData(charBuff);
       // NOTE: Just echoing back whatever we get
-      usart.sendString(charbuff);
+      usart.sendString(charBuff);
 
       // if (decodeMessage(charbuff) == 0) {
       //   uint8_t val = decodeIncomingAmount(charbuff);
