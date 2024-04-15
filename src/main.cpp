@@ -2,10 +2,10 @@
 #include "button.h"
 #include "gpio.h"
 #include "led.h"
+#include "timer.h"
 #include "usart.h"
 #include <avr/io.h>
-// #include <stdio.h>
-#include "timer.h"
+#include <stdio.h>
 #include <util/delay.h>
 
 #define baudRate 9600
@@ -24,23 +24,25 @@ int main(void) {
   usartPtr = &usart;
   adcPtr = &adc;
   timerPtr = &time;
-  uint16_t lastMillis = 0;
+  // uint16_t lastMillis = 0;
   uint16_t seconds = 0;
+  led.enableFrequencyToggle(2);
   SREG |= (1 << SREG_I); // enable interrupts
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
     usart.handleData();
-    adc.startRead(adcPin);
 
-    uint16_t newMillis = time.getMiliSec();
-    if (newMillis % 200 == 0 && lastMillis != newMillis) {
-      lastMillis = newMillis;
-      led.toggleLed();
-    }
+    // uint16_t newMillis = time.getMiliSec();
+    // if (newMillis % 200 == 0 && lastMillis != newMillis) {
+    //   lastMillis = newMillis;
+    //   led.toggleLed();
+    // }
 
-    if(seconds != time.getSeconds()){
-      usart.sendString("Tick\n\r");
+    led.checkFrequencyToggle(time.getMiliSec());
+
+    if (seconds != time.getSeconds()) {
+      adc.startRead(adcPin);
       seconds = time.getSeconds();
     }
 
@@ -66,10 +68,10 @@ int main(void) {
       // }
     }
 
-    // if (adc.dataReady()) {
-    // char strBuff[bufferSize];
-    // sprintf(strBuff, "ADC: %u\n\r", adc.readData());
-    // usart.sendString(strBuff);
-    // }
+    if (adc.dataReady()) {
+      char strBuff[bufferSize];
+      sprintf(strBuff, "ADC: %u\n\r", adc.readData());
+      usart.sendString(strBuff);
+    }
   }
 }
