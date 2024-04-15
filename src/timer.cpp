@@ -6,9 +6,11 @@ timer *timerPtr = nullptr;
 
 ISR(TIMER1_COMPA_vect) {
   timerPtr->msec++;
-  if (timerPtr->msec >= 999) {
-    timerPtr->msec = 0;
+  if (timerPtr->msec % 999 == 0) {
     timerPtr->seconds++;
+  }
+  if(timerPtr->msec == 0xffff){
+    timerPtr->msec = 535;
   }
 }
 

@@ -33,12 +33,6 @@ int main(void) {
   while (true) {
     usart.handleData();
 
-    // uint16_t newMillis = time.getMiliSec();
-    // if (newMillis % 200 == 0 && lastMillis != newMillis) {
-    //   lastMillis = newMillis;
-    //   led.toggleLed();
-    // }
-
     led.checkFrequencyToggle(time.getMiliSec());
 
     if (seconds != time.getSeconds()) {
@@ -70,8 +64,11 @@ int main(void) {
 
     if (adc.dataReady()) {
       char strBuff[bufferSize];
-      sprintf(strBuff, "ADC: %u\n\r", adc.readData());
+      uint16_t adcVal = adc.readData();
+      sprintf(strBuff, "ADC: %u\n\r", adcVal);
       usart.sendString(strBuff);
+      // led.enableFrequencyToggle(102300 / adcVal);
+      led.adcToFreqency(adcVal);
     }
   }
 }

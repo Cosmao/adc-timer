@@ -34,3 +34,15 @@ void led::checkFrequencyToggle(uint16_t milliSeconds) {
     this->lastToggle = milliSeconds;
   }
 }
+
+void led::adcToFreqency(uint16_t adcVal) {
+  scopedInterruptDisabler scopedDisable;
+  if (adcVal == 0) {
+    this->enableLed();
+    this->toggleFrequency = 0xffff;
+    // TODO: Add flags for this instead
+    return;
+  }
+  float freq = ((float)10 / (float)1023) * adcVal;
+  this->enableFrequencyToggle(static_cast<uint8_t>(freq));
+}

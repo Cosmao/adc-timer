@@ -16,6 +16,7 @@ public:
   void disableLed(void);
   void enableFrequencyToggle(uint8_t toggleHz);
   void checkFrequencyToggle(uint16_t milliSeconds);
+  void adcToFreqency(uint16_t adcVal);
 };
 
 #endif // !__led_h
