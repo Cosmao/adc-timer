@@ -2,7 +2,6 @@
 #include "interruptDisabler.h"
 
 #define bankSize 8
-#define maxPin 13
 
 gpio::gpio(pinEnum pin, ioEnum io)
     : pin(pin), readBank(getReadBank(pin)), readOffset(getReadOffset(pin)),
@@ -12,10 +11,10 @@ gpio::gpio(pinEnum pin, ioEnum io)
   switch (io) {
   case ioEnum::GPIO_INPUT:
     *dataDirectionPtr &= ~this->writeOffset;
-    break;
+    return;
   case ioEnum::GPIO_OUTPUT:
     *dataDirectionPtr |= this->writeOffset;
-    break;
+    return;
   }
 }
 
@@ -51,9 +50,7 @@ constexpr uint8_t gpio::getWriteBank(pinEnum pin) {
   }
 }
 
-constexpr uint8_t gpio::getWriteOffset(pinEnum pin) {
-  return getReadOffset(pin);
-}
+constexpr uint8_t gpio::getWriteOffset(pinEnum pin) { return getReadOffset(pin); }
 
 constexpr uint8_t gpio::getDDRBank(pinEnum pin) {
   switch (pin) {
