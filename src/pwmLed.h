@@ -5,15 +5,7 @@
 #include "led.h"
 #include <avr/io.h>
 
-// TODO: Get all the timers
-// 3, 5, 6, 9, 10, 11
-// 3 = OC2B
-// 5 = OC0B
-// 6 = OC0A
-// 9 = OC1A
-// 10 = OC1B
-// 11 = OC2A
-
+//NOTE: Not handling pin 9 and 10 to avoid messing with my internal timer
 enum pwmEnum {
   PWM_PIN3 = GPIO_PIN3,
   PWM_PIN5 = GPIO_PIN5,

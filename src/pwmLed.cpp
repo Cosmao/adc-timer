@@ -18,7 +18,6 @@ void pwmLed::setDutyCycle(uint8_t dutyCycle) {
 }
 
 constexpr uint8_t pwmLed::getFirstPwmRegister(pwmEnum pin) {
-  // NOTE: Not handling pin 9 or 10 since I cba to fight with the internal timer
   switch (pin) {
   case pwmEnum::PWM_PIN3:
   case pwmEnum::PWM_PIN11:
@@ -26,13 +25,15 @@ constexpr uint8_t pwmLed::getFirstPwmRegister(pwmEnum pin) {
   case pwmEnum::PWM_PIN5:
   case pwmEnum::PWM_PIN6:
     return (uint8_t)((uint16_t)&TCCR0A & 0xFF);
+  // case pwmEnum::PWM_PIN9:
+  // case pwmEnum::PWM_PIN10:
+  //   return (uint8_t)((uint16_t)&TCCR1A & 0xFF);
   default:
     return 0;
   }
 }
 
 constexpr uint8_t pwmLed::getSecondPwmRegister(pwmEnum pin) {
-  // NOTE: Not handling pin 9 or 10 since I cba to fight with the internal timer
   switch (pin) {
   case pwmEnum::PWM_PIN3:
   case pwmEnum::PWM_PIN11:
@@ -40,6 +41,9 @@ constexpr uint8_t pwmLed::getSecondPwmRegister(pwmEnum pin) {
   case pwmEnum::PWM_PIN5:
   case pwmEnum::PWM_PIN6:
     return (uint8_t)((uint16_t)&TCCR0B & 0xFF);
+  // case pwmEnum::PWM_PIN9:
+  // case pwmEnum::PWM_PIN10:
+  //   return (uint8_t)((uint16_t)&TCCR1B & 0xFF);
   default:
     return 0;
   }
@@ -55,6 +59,10 @@ constexpr uint8_t pwmLed::getDutyCycleRegister(pwmEnum pin) {
     return (uint8_t)((uint16_t)&OCR0A & 0xFF);
   case pwmEnum::PWM_PIN11:
     return (uint8_t)((uint16_t)&OCR2A & 0xFF);
+  // case pwmEnum::PWM_PIN9:
+  //   return (uint8_t)((uint16_t)&OCR1A & 0xFF);
+  // case pwmEnum::PWM_PIN10:
+  //   return (uint8_t)((uint16_t)&OCR1B & 0xFF);
   default:
     return 0;
   }
