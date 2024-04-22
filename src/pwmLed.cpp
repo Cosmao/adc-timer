@@ -5,16 +5,22 @@
 
 pwmLed::pwmLed(pwmEnum pin)
     : led(pinEnum(pin)), dutyCycleRegister(this->getDutyCycleRegister(pin)) {
+  //NOTE: This would have to be rewritten if it should handle timer 1
   volatile uint8_t *regPtr = getPtr(this->getFirstPwmRegister(pin));
-  *regPtr = ((1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00));
+  *regPtr = ((1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) |
+             (1 << WGM00)); // Non inverting fast PWM mode
   regPtr = getPtr(this->getSecondPwmRegister(pin));
-  *regPtr = (1 << CS02);
+  *regPtr = (1 << CS02); // 256 prescaler
 }
 
 void pwmLed::setDutyCycle(uint8_t dutyCycle) {
-  this->pwmDutyCycle = dutyCycle;
   volatile uint8_t *regPtr = getPtr(this->dutyCycleRegister);
-  *regPtr = this->pwmDutyCycle;
+  *regPtr = dutyCycle;
+}
+
+uint8_t pwmLed::getDutyCycle(void) {
+  volatile uint8_t *regPtr = getPtr(this->dutyCycleRegister);
+  return *regPtr;
 }
 
 constexpr uint8_t pwmLed::getFirstPwmRegister(pwmEnum pin) {

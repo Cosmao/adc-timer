@@ -17,7 +17,6 @@ enum pwmEnum {
 
 class pwmLed : private led {
 private:
-  uint8_t pwmDutyCycle = 0;
   const uint8_t dutyCycleRegister;
   constexpr uint8_t getFirstPwmRegister(pwmEnum pin);
   constexpr uint8_t getSecondPwmRegister(pwmEnum pin);
@@ -26,6 +25,7 @@ private:
 public:
   pwmLed(pwmEnum pin);
   void setDutyCycle(uint8_t dutyCycle);
+  uint8_t getDutyCycle(void);
 };
 
 #endif // !__pwmLed_h
