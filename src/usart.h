@@ -4,9 +4,9 @@
 #include <avr/io.h>
 
 #define bufferSize 32
-#define sendingFlag (1 << 0)
-#define recievingFlag (1 << 1)
-#define standbyFlag (1 << 2)
+#define isSendingFlag (1 << 0)
+#define isRecievingFlag (1 << 1)
+#define isStandbyFlag (1 << 2)
 #define incomingDataReadyFlag (1 << 3)
 #define sendBufferClearFlag (1 << 4)
 #define datalossFlag (1 << 5)
@@ -36,7 +36,7 @@ public:
   void sendString(const char *string);
   bool incomingDataReady(void);
   bool sendBufferClear(void);
-  void readData(char *string);
+  void readData(char *string, uint8_t incomingBufferSize);
   void handleData(void);
 };
 

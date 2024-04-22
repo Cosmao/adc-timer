@@ -4,8 +4,6 @@
 #include <avr/io.h>
 #include <string.h>
 
-// TODO: Rewrite so it can handle sending and recieving at the same time?
-
 usart *usartPtr = nullptr; // extern ptr for interrupt vec
 
 usart::usart(uint16_t baud) {
@@ -97,11 +95,11 @@ bool usart::sendBufferClear(void) {
 }
 
 // NOTE: Interrupts disabled here to insure integrity of the data
-void usart::readData(char *string) {
+void usart::readData(char *string, uint8_t incomingBufferSize) {
   scopedInterruptDisabler interruptDisabler;
   uint8_t counter = 0;
   while ((this->recieveBuffer[counter] != '\0') &&
-         (counter < (bufferSize - 2))) {
+         (counter < (bufferSize - 2)) && (counter < (incomingBufferSize - 2))) {
     string[counter] = this->recieveBuffer[counter];
     counter++;
   }
@@ -121,6 +119,8 @@ void usart::handleData(void) {
 ISR(USART_RX_vect) { usartPtr->flags |= actIncomingDataFlag; }
 
 ISR(USART_TX_vect) { usartPtr->flags |= actOutgoingDataFlag; }
+
+// TODO: Everything below this is garbage code
 
 uint8_t decodeIncomingAmount(const char *string) {
   uint8_t value = 0;
