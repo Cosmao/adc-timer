@@ -1,6 +1,7 @@
 #include "led.h"
 #include "gpio.h"
 #include "interruptDisabler.h"
+#include "timer.h"
 
 led::led(pinEnum pin) : gpio(pin, ioEnum::GPIO_OUTPUT) {}
 
@@ -29,11 +30,20 @@ void led::enableFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS) {
   this->getNextToggleTime(timerPtr);
 }
 
+void led::disableFrequencyToggle(void) {
+  this->flags &= ~isUsingFrequencyFlag;
+  this->msBetweenToggle = 0;
+  this->nextToggleMilliSeconds = 0;
+}
+
 void led::getNextToggleTime(timer *timerPtr) {
   scopedInterruptDisabler scopedDisable;
   this->nextToggleMilliSeconds = this->msBetweenToggle + timerPtr->getMiliSec();
+  // NOTE: This is the same as the overflow logic in the timer, just to handle
+  // that edgecase and we dont get stuck in a ms value that will never be
+  // reached
   if (this->nextToggleMilliSeconds == 0xffff) {
-    this->nextToggleMilliSeconds = 535;
+    this->nextToggleMilliSeconds = wrapAroundValue;
   }
 }
 

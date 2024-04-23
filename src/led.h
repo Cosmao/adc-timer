@@ -8,7 +8,7 @@
 #define isUsingFrequencyFlag (1 << 0)
 
 class led : public gpio {
-private:
+protected:
   uint16_t msBetweenToggle = 0;
   uint16_t nextToggleMilliSeconds = 0;
   void getNextToggleTime(timer *timerPtr);
@@ -19,6 +19,7 @@ public:
   void enableLed(void);
   void disableLed(void);
   void enableFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS);
+  void disableFrequencyToggle(void);
   void checkFrequencyToggle(timer *timerPtr);
   void adcToFreqency(timer *timePtr, uint16_t adcVal);
 };

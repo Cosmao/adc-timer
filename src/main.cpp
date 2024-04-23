@@ -1,25 +1,27 @@
 #include "adc.h"
 #include "button.h"
 #include "gpio.h"
-#include "led.h"
 #include "pwmLed.h"
 #include "timer.h"
 #include "usart.h"
 #include <avr/io.h>
-#include <stdio.h>
 
 // TODO: Make it a state machine here in main to do shit, enter states via
 // strings over usart
 //
+// TODO: make the button work properly with the ledpwm
+//
 
 #define baudRate 9600
 #define ledPin pinEnum::GPIO_PIN3
+#define pwmLedPin pwmEnum::PWM_PIN3
 #define buttonPin pinEnum::GPIO_PIN4
 #define adcPin 0
 #define shittyDebounceTime 250
 
 int main(void) {
-  led led(ledPin);
+  pwmLed led(pwmLedPin, 25);
+  // led led(ledPin);
   ledButton button(buttonPin, led);
   adc adc;
   usart usart(baudRate);
@@ -32,7 +34,7 @@ int main(void) {
   uint16_t lastMillis = 0;
   uint16_t seconds = 0;
   SREG |= (1 << SREG_I); // enable interrupts
-  led.enableFrequencyToggle(timerPtr, 500);
+  led.enableFrequencyToggle(timerPtr, 200);
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
@@ -43,6 +45,7 @@ int main(void) {
     if (seconds != time.getSeconds()) {
       adc.startRead(adcPin);
       seconds = time.getSeconds();
+      // led.setDutyCycle((led.getDutyCycle() == 255 ? 10 : 255));
     }
 
     if (button.isButtonPressed() &&

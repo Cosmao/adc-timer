@@ -1,16 +1,20 @@
 #include "pwmLed.h"
 #include "gpio.h"
+#include "interruptDisabler.h"
 #include "led.h"
 #include <avr/io.h>
 
-pwmLed::pwmLed(pwmEnum pin)
-    : led(pinEnum(pin)), dutyCycleRegister(this->getDutyCycleRegister(pin)) {
-  //NOTE: This would have to be rewritten if it should handle timer 1
-  volatile uint8_t *regPtr = getPtr(this->getFirstPwmRegister(pin));
+pwmLed::pwmLed(pwmEnum pin, uint8_t dutyCycle)
+    : led(pinEnum(pin)), dutyCycleRegister(this->getDutyCycleRegister(pin)),
+      timerControlRegisterA(this->getFirstPwmRegister(pin)) {
+  // NOTE: This would have to be rewritten if it should handle timer 1
+  volatile uint8_t *regPtr = getPtr(this->timerControlRegisterA);
   *regPtr = ((1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) |
              (1 << WGM00)); // Non inverting fast PWM mode
   regPtr = getPtr(this->getSecondPwmRegister(pin));
   *regPtr = (1 << CS02); // 256 prescaler
+  regPtr = getPtr(this->dutyCycleRegister);
+  *regPtr = dutyCycle;
 }
 
 void pwmLed::setDutyCycle(uint8_t dutyCycle) {
@@ -22,6 +26,31 @@ uint8_t pwmLed::getDutyCycle(void) {
   volatile uint8_t *regPtr = getPtr(this->dutyCycleRegister);
   return *regPtr;
 }
+
+void pwmLed::toggleLed(void) {
+  volatile uint8_t *regPtrs = getPtr(this->timerControlRegisterA);
+  if ((this->flags & disabledFlag) == disabledFlag) {
+    *regPtrs = this->timerControlRegisterASavedValue;
+    this->flags &= ~disabledFlag;
+  } else {
+    this->timerControlRegisterASavedValue = *regPtrs;
+    *regPtrs &= 0x0f;
+    this->flags |= disabledFlag;
+  }
+}
+
+// NOTE: I kinda hate this but it works
+void pwmLed::checkFrequencyToggle(timer *timerPtr) {
+  scopedInterruptDisabler scopedDisable;
+  if ((this->flags & isUsingFrequencyFlag) != isUsingFrequencyFlag) {
+    return;
+  }
+  if (timerPtr->getMiliSec() >= this->nextToggleMilliSeconds) {
+    this->toggleLed();
+    this->getNextToggleTime(timerPtr);
+  }
+}
+
 
 constexpr uint8_t pwmLed::getFirstPwmRegister(pwmEnum pin) {
   switch (pin) {

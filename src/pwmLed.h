@@ -5,7 +5,7 @@
 #include "led.h"
 #include <avr/io.h>
 
-//NOTE: Not handling pin 9 and 10 to avoid messing with my internal timer
+// NOTE: Not handling pin 9 and 10 to avoid messing with my internal timer
 enum pwmEnum {
   PWM_PIN3 = GPIO_PIN3,
   PWM_PIN5 = GPIO_PIN5,
@@ -15,17 +15,23 @@ enum pwmEnum {
   PWM_PIN11 = GPIO_PIN11,
 };
 
-class pwmLed : private led {
+#define disabledFlag (1 << 1)
+
+class pwmLed : public led {
 private:
   const uint8_t dutyCycleRegister;
+  const uint8_t timerControlRegisterA;
+  uint8_t timerControlRegisterASavedValue;
   constexpr uint8_t getFirstPwmRegister(pwmEnum pin);
   constexpr uint8_t getSecondPwmRegister(pwmEnum pin);
   constexpr uint8_t getDutyCycleRegister(pwmEnum pin);
 
 public:
-  pwmLed(pwmEnum pin);
+  pwmLed(pwmEnum pin, uint8_t dutyCycle);
   void setDutyCycle(uint8_t dutyCycle);
   uint8_t getDutyCycle(void);
+  void toggleLed(void);
+  void checkFrequencyToggle(timer *timerPtr);
 };
 
 #endif // !__pwmLed_h

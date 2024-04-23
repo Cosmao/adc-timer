@@ -10,7 +10,7 @@ ISR(TIMER1_COMPA_vect) {
     timerPtr->seconds++;
   }
   if(timerPtr->msec == 0xffff){
-    timerPtr->msec = 535;
+    timerPtr->msec = wrapAroundValue;
   }
 }
 
