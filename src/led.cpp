@@ -66,6 +66,7 @@ void led::adcToFreqency(timer *timePtr, uint16_t adcVal) {
     this->flags &= ~isUsingFrequencyFlag;
     return;
   }
+  //TODO: Update this for the new enableFreqTOggle
   float freq = ((float)10 / (float)1023) * adcVal;
   this->enableFrequencyToggle(timePtr, static_cast<uint8_t>(freq));
 }

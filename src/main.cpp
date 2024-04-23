@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "usart.h"
 #include <avr/io.h>
+#include <stdio.h>
 
 // TODO: Make it a state machine here in main to do shit, enter states via
 // strings over usart
@@ -34,7 +35,7 @@ int main(void) {
   uint16_t lastMillis = 0;
   uint16_t seconds = 0;
   SREG |= (1 << SREG_I); // enable interrupts
-  led.enableFrequencyToggle(timerPtr, 200);
+  led.enableFrequencyToggle(timerPtr, 5000);
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
@@ -69,13 +70,12 @@ int main(void) {
       // }
     }
 
-    // if (adc.dataReady()) {
-    //   char strBuff[bufferSize];
-    //   uint16_t adcVal = adc.readData();
-    //   sprintf(strBuff, "ADC: %u\n\r", adcVal);
-    //   usart.sendString(strBuff);
-    //   led.adcToFreqency(timerPtr, adcVal);
-    // }
-    //
+    if (adc.dataReady()) {
+      char strBuff[bufferSize];
+      uint16_t adcVal = adc.readData();
+      snprintf(strBuff, bufferSize, "ADC: %u\n\r", adcVal);
+      usart.sendString(strBuff);
+      led.adcToFreqency(timerPtr, adcVal);
+    }
   }
 }
