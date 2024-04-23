@@ -8,11 +8,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 
-// TODO: Make it a state machine here in main to do shit, enter states via
-// strings over usart
-//
 // TODO: make the button work properly with the ledpwm
-//
 
 #define baudRate 9600
 #define ledPin pinEnum::GPIO_PIN3
@@ -21,9 +17,11 @@
 #define adcPin 0
 #define shittyDebounceTime 250
 
+#define isEchoingInput (1 << 0)
+#define adcFlag (1 << 1)
+
 int main(void) {
   pwmLed led(pwmLedPin, 25);
-  // led led(ledPin);
   ledButton button(buttonPin, led);
   adc adc;
   usart usart(baudRate);
@@ -33,8 +31,9 @@ int main(void) {
   usartPtr = &usart;
   adcPtr = &adc;
   timerPtr = &time;
-  uint16_t lastMillis = 0;
+  uint16_t lastMillis = 0; // Used for simple debounce
   uint16_t seconds = 0;
+  uint8_t flags = 0;
   SREG |= (1 << SREG_I); // enable interrupts
   led.enableFrequencyToggle(timerPtr, 5000);
   usart.sendString("Starting\n\r");
@@ -44,10 +43,9 @@ int main(void) {
 
     led.checkFrequencyToggle(timerPtr);
 
-    if (seconds != time.getSeconds()) {
-      // adc.startRead(adcPin);
+    if (seconds != time.getSeconds() && ((flags & adcFlag) == adcFlag)) {
+      adc.startRead(adcPin);
       seconds = time.getSeconds();
-      // led.setDutyCycle((led.getDutyCycle() == 255 ? 10 : 255));
     }
 
     if (button.isButtonPressed() &&
@@ -58,19 +56,37 @@ int main(void) {
 
     if (usart.incomingDataReady()) {
       usart.readData(charBuff, bufferSize);
-      if (decodeMessage(charBuff) == message::echoInput) {
+      if ((flags & isEchoingInput) == isEchoingInput) {
         usart.sendString(charBuff);
       }
-      // NOTE: Just echoing back whatever we get
-
-      // if (decodeMessage(charbuff) == 0) {
-      //   uint8_t val = decodeIncomingAmount(charbuff);
-      //   if (val > 127) {
-      //     led.enableLed();
-      //   } else {
-      //     led.disableLed();
-      //   }
-      // }
+      stringValues values;
+      char buff[bufferSize];
+      message decodedValue = decodeMessage(charBuff);
+      switch (decodedValue) {
+      case message::adcToPWM:
+        flags ^= adcFlag;
+        usart.sendString("Toggled adc to PWM\n\r");
+        break;
+      case message::echoInput:
+        flags ^= isEchoingInput;
+        usart.sendString("Toggled echoing\n\r");
+        break;
+      case message::ledDutyCycle:
+        led.setDutyCycle(getOneNumber(charBuff).valueOne);
+        usart.sendString("DutyCycle changed\n\r");
+        break;
+      case message::ledFreq:
+        values = getTwoNumbers(charBuff);
+        led.setDutyCycle(values.valueOne);
+        led.enableFrequencyToggle(timerPtr, values.valueTwo);
+        snprintf(buff, bufferSize, "PWM: %u MSWait: %u\n\r", values.valueOne,
+                 values.valueTwo);
+        usart.sendString(buff);
+        break;
+      case message::noMatch:
+        usart.sendString("Invalid input\n\r");
+        break;
+      }
     }
 
     if (adc.dataReady()) {

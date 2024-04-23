@@ -11,8 +11,14 @@ enum message {
   noMatch,
 };
 
+typedef struct {
+  uint16_t valueOne;
+  uint16_t valueTwo;
+} stringValues;
+
 message decodeMessage(const char *str);
-uint16_t getFirstNumber(const char *str);
-uint16_t getSecondNumber(const char *str);
+stringValues getOneNumber(const char *str);
+stringValues getTwoNumbers(const char *str);
+uint16_t getNumberFromString(const char *str);
 
 #endif // !__stringDecoder_h
