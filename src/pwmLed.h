@@ -16,12 +16,14 @@ enum pwmEnum {
 };
 
 #define disabledFlag (1 << 1)
+#define delayedDutyCycleFlag (1 << 2)
 
 class pwmLed : public led {
 private:
   const uint8_t dutyCycleRegister;
   const uint8_t timerControlRegisterA;
   uint8_t timerControlRegisterASavedValue;
+  uint8_t delayedDutyCycle;
   constexpr uint8_t getFirstPwmRegister(pwmEnum pin);
   constexpr uint8_t getSecondPwmRegister(pwmEnum pin);
   constexpr uint8_t getDutyCycleRegister(pwmEnum pin);
@@ -32,6 +34,7 @@ public:
   uint8_t getDutyCycle(void);
   void toggleLed(void);
   void checkFrequencyToggle(timer *timerPtr);
+  void delayedSetDutyCycle(uint8_t dutyCycle);
 };
 
 #endif // !__pwmLed_h

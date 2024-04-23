@@ -32,6 +32,10 @@ void pwmLed::toggleLed(void) {
   if ((this->flags & disabledFlag) == disabledFlag) {
     *regPtrs = this->timerControlRegisterASavedValue;
     this->flags &= ~disabledFlag;
+    if ((this->flags & delayedDutyCycleFlag) == delayedDutyCycleFlag) {
+      this->setDutyCycle(this->delayedDutyCycle);
+      this->flags &= ~delayedDutyCycleFlag;
+    }
   } else {
     this->timerControlRegisterASavedValue = *regPtrs;
     *regPtrs &= 0x0f;
@@ -51,6 +55,10 @@ void pwmLed::checkFrequencyToggle(timer *timerPtr) {
   }
 }
 
+void pwmLed::delayedSetDutyCycle(uint8_t dutyCycle) {
+  this->flags |= delayedDutyCycleFlag;
+  this->delayedDutyCycle = dutyCycle;
+}
 
 constexpr uint8_t pwmLed::getFirstPwmRegister(pwmEnum pin) {
   switch (pin) {

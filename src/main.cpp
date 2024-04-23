@@ -8,8 +8,6 @@
 #include <avr/io.h>
 #include <stdio.h>
 
-// TODO: make the button work properly with the ledpwm
-
 #define baudRate 9600
 #define ledPin pinEnum::GPIO_PIN3
 #define pwmLedPin pwmEnum::PWM_PIN3
@@ -50,8 +48,8 @@ int main(void) {
 
     if (button.isButtonPressed() &&
         lastMillis + shittyDebounceTime < time.getMiliSec()) {
-      button.toggleButtonLed();
-      lastMillis = time.getMiliSec();
+      led.toggleLed(); // TODO: Make this callable from the button instead
+      lastMillis = time.getMiliSec(); // TODO: Move all of this into the button
     }
 
     if (usart.incomingDataReady()) {
@@ -72,12 +70,12 @@ int main(void) {
         usart.sendString("Toggled echoing\n\r");
         break;
       case message::ledDutyCycle:
-        led.setDutyCycle(getOneNumber(charBuff).valueOne);
+        led.delayedSetDutyCycle(getOneNumber(charBuff).valueOne);
         usart.sendString("DutyCycle changed\n\r");
         break;
       case message::ledFreq:
         values = getTwoNumbers(charBuff);
-        led.setDutyCycle(values.valueOne);
+        led.delayedSetDutyCycle(values.valueOne);
         led.enableFrequencyToggle(timerPtr, values.valueTwo);
         snprintf(buff, bufferSize, "PWM: %u MSWait: %u\n\r", values.valueOne,
                  values.valueTwo);
