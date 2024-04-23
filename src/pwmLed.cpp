@@ -56,8 +56,12 @@ void pwmLed::checkFrequencyToggle(timer *timerPtr) {
 }
 
 void pwmLed::delayedSetDutyCycle(uint8_t dutyCycle) {
-  this->flags |= delayedDutyCycleFlag;
-  this->delayedDutyCycle = dutyCycle;
+  if ((this->flags & disabledFlag) == disabledFlag) {
+    this->flags |= delayedDutyCycleFlag;
+    this->delayedDutyCycle = dutyCycle;
+  } else {
+    this->setDutyCycle(dutyCycle);;
+  }
 }
 
 constexpr uint8_t pwmLed::getFirstPwmRegister(pwmEnum pin) {
