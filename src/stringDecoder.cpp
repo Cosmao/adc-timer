@@ -4,16 +4,16 @@
 
 #define numberBufferSize 16
 
-message decodeMessage(const char *str) {
+messageEnum decodeMessage(const char *str) {
   const char *strings[] = {"adcpwm", "echo", "ledpowerfreq", "ledduty", "disablefreq"};
   uint8_t index = 0;
   for (auto string : strings) {
     if (strncmp(str, string, strlen(string)) == 0) {
-      return message(index);
+      return messageEnum(index);
     }
     index++;
   }
-  return message::noMatch;
+  return messageEnum::noMatch;
 }
 
 stringValues getOneNumber(const char *str) {

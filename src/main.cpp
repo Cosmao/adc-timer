@@ -59,24 +59,24 @@ int main(void) {
       }
       stringValues values;
       char buff[bufferSize];
-      message decodedValue = decodeMessage(charBuff);
+      messageEnum decodedValue = decodeMessage(charBuff);
       switch (decodedValue) {
-      case message::adcToPWM:
+      case messageEnum::adcToPWM:
         flags ^= adcFlag;
         usart.sendString("Toggled adc to PWM\n\r");
         break;
 
-      case message::echoInput:
+      case messageEnum::echoInput:
         flags ^= isEchoingInput;
         usart.sendString("Toggled echoing\n\r");
         break;
 
-      case message::ledDutyCycle:
+      case messageEnum::ledDutyCycle:
         led.delayedSetDutyCycle(getOneNumber(charBuff).valueOne);
         usart.sendString("DutyCycle changed\n\r");
         break;
 
-      case message::ledFreq:
+      case messageEnum::ledFreq:
         values = getTwoNumbers(charBuff);
         led.delayedSetDutyCycle(values.valueOne);
         led.changeFrequencyToggle(timerPtr, values.valueTwo);
@@ -85,11 +85,11 @@ int main(void) {
         usart.sendString(buff);
         break;
 
-      case message::disableFreq:
+      case messageEnum::disableFreq:
         led.disableFrequencyToggle();
         usart.sendString("Disabled freq\n\r");
 
-      case message::noMatch:
+      case messageEnum::noMatch:
         usart.sendString("Invalid input\n\r");
         break;
       }

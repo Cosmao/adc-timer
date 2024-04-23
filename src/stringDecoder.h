@@ -3,7 +3,7 @@
 
 #include <avr/io.h>
 
-enum message {
+enum messageEnum {
   adcToPWM,
   echoInput,
   ledFreq,
@@ -17,7 +17,7 @@ typedef struct {
   uint16_t valueTwo;
 } stringValues;
 
-message decodeMessage(const char *str);
+messageEnum decodeMessage(const char *str);
 stringValues getOneNumber(const char *str);
 stringValues getTwoNumbers(const char *str);
 uint16_t getNumberFromString(const char *str);

@@ -55,12 +55,15 @@ void pwmLed::checkFrequencyToggle(timer *timerPtr) {
   }
 }
 
+// NOTE: if you change the dutyCycle when led is off it also turns on, this
+// delays the change until its turned on again
 void pwmLed::delayedSetDutyCycle(uint8_t dutyCycle) {
   if ((this->flags & disabledFlag) == disabledFlag) {
     this->flags |= delayedDutyCycleFlag;
     this->delayedDutyCycle = dutyCycle;
   } else {
-    this->setDutyCycle(dutyCycle);;
+    this->setDutyCycle(dutyCycle);
+    ;
   }
 }
 
