@@ -40,10 +40,6 @@ public:
   void handleData(void);
 };
 
-uint8_t decodeIncomingAmount(const char *string);
-uint8_t decodeMessage(const char *string);
-uint8_t decodeMultiplier(uint8_t loopCount);
-
 extern usart *usartPtr;
 
 #endif // !__usart_h

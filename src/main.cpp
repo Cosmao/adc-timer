@@ -2,6 +2,7 @@
 #include "button.h"
 #include "gpio.h"
 #include "pwmLed.h"
+#include "stringDecoder.h"
 #include "timer.h"
 #include "usart.h"
 #include <avr/io.h>
@@ -44,7 +45,7 @@ int main(void) {
     led.checkFrequencyToggle(timerPtr);
 
     if (seconds != time.getSeconds()) {
-      adc.startRead(adcPin);
+      // adc.startRead(adcPin);
       seconds = time.getSeconds();
       // led.setDutyCycle((led.getDutyCycle() == 255 ? 10 : 255));
     }
@@ -57,8 +58,10 @@ int main(void) {
 
     if (usart.incomingDataReady()) {
       usart.readData(charBuff, bufferSize);
+      if (decodeMessage(charBuff) == message::echoInput) {
+        usart.sendString(charBuff);
+      }
       // NOTE: Just echoing back whatever we get
-      usart.sendString(charBuff);
 
       // if (decodeMessage(charbuff) == 0) {
       //   uint8_t val = decodeIncomingAmount(charbuff);
