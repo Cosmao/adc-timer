@@ -24,7 +24,7 @@ enum pinEnum {
 
 class gpio {
 protected:
-  uint8_t flags;
+  uint8_t flags = 0;
   const uint8_t pin;
   const uint8_t readBank;
   const uint8_t readOffset;

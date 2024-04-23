@@ -7,7 +7,6 @@
 #include "usart.h"
 #include <avr/io.h>
 #include <stdio.h>
-#include <util/delay.h>
 
 // TODO: Make it a state machine here in main to do shit, enter states via
 // strings over usart
@@ -16,12 +15,11 @@
 #define baudRate 9600
 #define ledPin pinEnum::GPIO_PIN3
 #define buttonPin pinEnum::GPIO_PIN4
-#define pwmLedPin pwmEnum::PWM_PIN6
 #define adcPin 0
+#define shittyDebounceTime 250
 
 int main(void) {
   led led(ledPin);
-  pwmLed pwmLed(pwmLedPin);
   ledButton button(buttonPin, led);
   adc adc;
   usart usart(baudRate);
@@ -31,28 +29,26 @@ int main(void) {
   usartPtr = &usart;
   adcPtr = &adc;
   timerPtr = &time;
-  // uint16_t lastMillis = 0;
+  uint16_t lastMillis = 0;
   uint16_t seconds = 0;
-  led.enableFrequencyToggle(2);
-  pwmLed.setDutyCycle(255);
   SREG |= (1 << SREG_I); // enable interrupts
+  led.enableFrequencyToggle(timerPtr, 500);
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
     usart.handleData();
 
-    led.checkFrequencyToggle(time.getMiliSec());
+    led.checkFrequencyToggle(timerPtr);
 
     if (seconds != time.getSeconds()) {
       adc.startRead(adcPin);
       seconds = time.getSeconds();
     }
 
-    if (button.isButtonPressed()) {
+    if (button.isButtonPressed() &&
+        lastMillis + shittyDebounceTime < time.getMiliSec()) {
       button.toggleButtonLed();
-      // NOTE: delay is only here to make it usable, havent set up a proper
-      // debounce with timers
-      _delay_ms(250);
+      lastMillis = time.getMiliSec();
     }
 
     if (usart.incomingDataReady()) {
@@ -70,13 +66,13 @@ int main(void) {
       // }
     }
 
-    if (adc.dataReady()) {
-      char strBuff[bufferSize];
-      uint16_t adcVal = adc.readData();
-      sprintf(strBuff, "ADC: %u\n\r", adcVal);
-      usart.sendString(strBuff);
-      // led.enableFrequencyToggle(102300 / adcVal);
-      led.adcToFreqency(adcVal);
-    }
+    // if (adc.dataReady()) {
+    //   char strBuff[bufferSize];
+    //   uint16_t adcVal = adc.readData();
+    //   sprintf(strBuff, "ADC: %u\n\r", adcVal);
+    //   usart.sendString(strBuff);
+    //   led.adcToFreqency(timerPtr, adcVal);
+    // }
+    //
   }
 }

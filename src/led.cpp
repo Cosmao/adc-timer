@@ -22,27 +22,40 @@ void led::disableLed(void) {
   *outputRegisterPtr &= ~this->writeOffset;
 }
 
-void led::enableFrequencyToggle(uint8_t toggleHz) {
-  this->toggleFrequency = 1000 / toggleHz;
+void led::enableFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS) {
+  scopedInterruptDisabler scopedDisable;
+  this->flags |= isUsingFrequencyFlag;
+  this->msBetweenToggle = onOffTimeInMS;
+  this->getNextToggleTime(timerPtr);
 }
 
-void led::checkFrequencyToggle(uint16_t milliSeconds) {
+void led::getNextToggleTime(timer *timerPtr) {
   scopedInterruptDisabler scopedDisable;
-  if ((milliSeconds % this->toggleFrequency == 0) &&
-      (milliSeconds != this->lastToggle)) {
-    this->toggleLed();
-    this->lastToggle = milliSeconds;
+  this->nextToggleMilliSeconds = this->msBetweenToggle + timerPtr->getMiliSec();
+  if (this->nextToggleMilliSeconds == 0xffff) {
+    this->nextToggleMilliSeconds = 535;
   }
 }
 
-void led::adcToFreqency(uint16_t adcVal) {
+// NOTE: I kinda hate this but it works
+void led::checkFrequencyToggle(timer *timerPtr) {
+  scopedInterruptDisabler scopedDisable;
+  if ((this->flags & isUsingFrequencyFlag) != isUsingFrequencyFlag) {
+    return;
+  }
+  if (timerPtr->getMiliSec() >= this->nextToggleMilliSeconds) {
+    this->toggleLed();
+    this->getNextToggleTime(timerPtr);
+  }
+}
+
+void led::adcToFreqency(timer *timePtr, uint16_t adcVal) {
   scopedInterruptDisabler scopedDisable;
   if (adcVal == 0) {
     this->enableLed();
-    this->toggleFrequency = 0xffff;
-    // TODO: Add flags for this instead
+    this->flags &= ~isUsingFrequencyFlag;
     return;
   }
   float freq = ((float)10 / (float)1023) * adcVal;
-  this->enableFrequencyToggle(static_cast<uint8_t>(freq));
+  this->enableFrequencyToggle(timePtr, static_cast<uint8_t>(freq));
 }
