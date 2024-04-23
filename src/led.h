@@ -18,7 +18,7 @@ public:
   void toggleLed(void);
   void enableLed(void);
   void disableLed(void);
-  void enableFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS);
+  void changeFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS);
   void disableFrequencyToggle(void);
   void checkFrequencyToggle(timer *timerPtr);
   void adcToFreqency(timer *timePtr, uint16_t adcVal);

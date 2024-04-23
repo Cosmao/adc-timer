@@ -33,7 +33,7 @@ int main(void) {
   uint16_t seconds = 0;
   uint8_t flags = 0;
   SREG |= (1 << SREG_I); // enable interrupts
-  led.enableFrequencyToggle(timerPtr, 5000);
+  // led.enableFrequencyToggle(timerPtr, 5000);
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
@@ -65,22 +65,30 @@ int main(void) {
         flags ^= adcFlag;
         usart.sendString("Toggled adc to PWM\n\r");
         break;
+
       case message::echoInput:
         flags ^= isEchoingInput;
         usart.sendString("Toggled echoing\n\r");
         break;
+
       case message::ledDutyCycle:
         led.delayedSetDutyCycle(getOneNumber(charBuff).valueOne);
         usart.sendString("DutyCycle changed\n\r");
         break;
+
       case message::ledFreq:
         values = getTwoNumbers(charBuff);
         led.delayedSetDutyCycle(values.valueOne);
-        led.enableFrequencyToggle(timerPtr, values.valueTwo);
+        led.changeFrequencyToggle(timerPtr, values.valueTwo);
         snprintf(buff, bufferSize, "PWM: %u MSWait: %u\n\r", values.valueOne,
                  values.valueTwo);
         usart.sendString(buff);
         break;
+
+      case message::disableFreq:
+        led.disableFrequencyToggle();
+        usart.sendString("Disabled freq\n\r");
+
       case message::noMatch:
         usart.sendString("Invalid input\n\r");
         break;

@@ -23,8 +23,12 @@ void led::disableLed(void) {
   *outputRegisterPtr &= ~this->writeOffset;
 }
 
-void led::enableFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS) {
+void led::changeFrequencyToggle(timer *timerPtr, uint16_t onOffTimeInMS) {
   scopedInterruptDisabler scopedDisable;
+  if (onOffTimeInMS == 0) {
+    this->disableFrequencyToggle();
+    return;
+  }
   this->flags |= isUsingFrequencyFlag;
   this->msBetweenToggle = onOffTimeInMS;
   this->getNextToggleTime(timerPtr);
@@ -66,7 +70,7 @@ void led::adcToFreqency(timer *timePtr, uint16_t adcVal) {
     this->flags &= ~isUsingFrequencyFlag;
     return;
   }
-  //TODO: Update this for the new enableFreqTOggle
+  // TODO: Update this for the new enableFreqTOggle
   float freq = ((float)10 / (float)1023) * adcVal;
-  this->enableFrequencyToggle(timePtr, static_cast<uint8_t>(freq));
+  this->changeFrequencyToggle(timePtr, static_cast<uint8_t>(freq));
 }

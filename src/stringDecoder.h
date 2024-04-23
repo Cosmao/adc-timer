@@ -8,6 +8,7 @@ enum message {
   echoInput,
   ledFreq,
   ledDutyCycle,
+  disableFreq,
   noMatch,
 };
 
