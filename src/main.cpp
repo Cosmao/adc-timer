@@ -33,7 +33,6 @@ int main(void) {
   uint16_t seconds = 0;
   uint8_t flags = 0;
   SREG |= (1 << SREG_I); // enable interrupts
-  // led.enableFrequencyToggle(timerPtr, 5000);
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
