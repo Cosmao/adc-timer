@@ -10,8 +10,6 @@
 #define incomingDataReadyFlag (1 << 3)
 #define sendBufferClearFlag (1 << 4)
 #define datalossFlag (1 << 5)
-#define actIncomingDataFlag (1 << 6)
-#define actOutgoingDataFlag (1 << 7)
 
 extern "C" void USART_RX_vect(void) __attribute__((signal));
 extern "C" void USART_TX_vect(void) __attribute__((signal));
@@ -37,7 +35,6 @@ public:
   bool incomingDataReady(void);
   bool sendBufferClear(void);
   void readData(char *string, uint8_t incomingBufferSize);
-  void handleData(void);
 };
 
 extern usart *usartPtr;

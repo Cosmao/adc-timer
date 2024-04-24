@@ -37,7 +37,6 @@ int main(void) {
   usart.sendString("Starting\n\r");
   char charBuff[bufferSize];
   while (true) {
-    usart.handleData();
 
     led.checkFrequencyToggle(timerPtr);
 

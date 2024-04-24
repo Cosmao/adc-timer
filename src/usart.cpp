@@ -2,7 +2,6 @@
 #include "interruptDisabler.h"
 #include <avr/interrupt.h>
 #include <avr/io.h>
-#include <string.h>
 
 usart *usartPtr = nullptr; // extern ptr for interrupt vec
 
@@ -37,7 +36,6 @@ bool usart::dataGood(uint8_t *buff, uint8_t index) {
 void usart::sendByte(void) {
   if ((UCSR0A & (1 << UDRE0)) == (1 << UDRE0)) {
     scopedInterruptDisabler interruptDisabler;
-    this->flags &= ~actOutgoingDataFlag;
     if (this->isInRange(this->sendIndex)) {
       if (this->dataGood(this->sendBuffer, this->sendIndex)) {
         UDR0 = this->sendBuffer[this->sendIndex];
@@ -69,7 +67,6 @@ void usart::sendString(const char *string) {
 void usart::readByte(void) {
   if ((UCSR0A & (1 << RXC0)) == (1 << RXC0)) {
     scopedInterruptDisabler interruptDisabler;
-    this->flags &= ~actIncomingDataFlag;
     if (this->isInRange(this->recieveIndex)) {
       this->recieveBuffer[this->recieveIndex] = UDR0;
       if (this->recieveBuffer[this->recieveIndex] == '\0') {
@@ -107,15 +104,6 @@ void usart::readData(char *string, uint8_t incomingBufferSize) {
   this->flags &= ~incomingDataReadyFlag;
 }
 
-void usart::handleData(void) {
-  if ((this->flags & actIncomingDataFlag) == actIncomingDataFlag) {
-    usartPtr->readByte();
-  }
-  if ((this->flags & actOutgoingDataFlag) == actOutgoingDataFlag) {
-    usartPtr->sendByte();
-  }
-}
+ISR(USART_RX_vect) { usartPtr->readByte(); }
 
-ISR(USART_RX_vect) { usartPtr->flags |= actIncomingDataFlag; }
-
-ISR(USART_TX_vect) { usartPtr->flags |= actOutgoingDataFlag; }
+ISR(USART_TX_vect) { usartPtr->sendByte(); }
