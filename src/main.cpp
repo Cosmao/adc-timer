@@ -56,7 +56,6 @@ int main(void) {
         usart.sendString(charBuff);
       }
       stringValues values;
-      char buff[bufferSize];
       messageEnum decodedValue = decodeMessage(charBuff);
       switch (decodedValue) {
       case messageEnum::adcToPWM:
@@ -78,9 +77,9 @@ int main(void) {
         values = getTwoNumbers(charBuff);
         led.delayedSetDutyCycle(values.valueOne);
         led.changeFrequencyToggle(timerPtr, values.valueTwo);
-        snprintf(buff, bufferSize, "PWM: %u MSWait: %u\n\r", values.valueOne,
+        snprintf(charBuff, bufferSize, "PWM: %u MSWait: %u\n\r", values.valueOne,
                  values.valueTwo);
-        usart.sendString(buff);
+        usart.sendString(charBuff);
         break;
 
       case messageEnum::disableFreq:
